@@ -22,9 +22,7 @@ export function SimpleDemoChat() {
   const [context, setContext] = useState<string>('');
   const [contextTitle, setContextTitle] = useState<string>('');
   const [showContextPanel, setShowContextPanel] = useState(false);
-  const [notionPages, setNotionPages] = useState<any[]>([]);
-  const [loadingNotion, setLoadingNotion] = useState(false);
-  const [notionConnected, setNotionConnected] = useState(false);
+
 
   const sendMessage = async (messageText: string) => {
     if (!messageText.trim() || isLoading) return;
@@ -135,31 +133,7 @@ export function SimpleDemoChat() {
 
   const lastAssistantMessage = messages.filter(m => m.role === 'assistant').pop()?.content;
 
-  // Check Notion connection status on component mount
-  React.useEffect(() => {
-    const checkNotionConnection = async () => {
-      try {
-        const response = await fetch('/api/notion/pages');
-        if (response.ok) {
-          setNotionConnected(true);
-        }
-      } catch (error) {
-        // Connection not available
-        setNotionConnected(false);
-      }
-    };
 
-    checkNotionConnection();
-
-    // Check for OAuth callback success
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('notion_connected') === 'true') {
-      setNotionConnected(true);
-      toast.success('Notion connected successfully!');
-      // Clean up URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }, []);
 
   // File upload handler
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -187,58 +161,7 @@ export function SimpleDemoChat() {
     reader.readAsText(file);
   };
 
-  // Connect to Notion via OAuth
-  const connectToNotion = () => {
-    // In demo mode, this will simulate the OAuth flow
-    window.location.href = '/api/notion/auth';
-  };
 
-  // Load Notion pages (for already connected users)
-  const loadNotionPages = async () => {
-    setLoadingNotion(true);
-    try {
-      const response = await fetch('/api/notion/pages');
-      if (!response.ok) {
-        if (response.status === 401) {
-          toast.error('Please connect your Notion workspace first');
-          return;
-        }
-        throw new Error('Failed to load Notion pages');
-      }
-      const data = await response.json();
-      setNotionPages(data.pages || []);
-      toast.success('Notion pages loaded');
-    } catch (error) {
-      console.error('Error loading Notion pages:', error);
-      toast.error('Failed to load Notion pages. Please try connecting again.');
-    } finally {
-      setLoadingNotion(false);
-    }
-  };
-
-  // Load Notion page content
-  const loadNotionPage = async (pageId: string, title: string) => {
-    try {
-      const response = await fetch('/api/notion/pages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pageId }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to load page content');
-      }
-
-      const data = await response.json();
-      setContext(data.page.content);
-      setContextTitle(title);
-      setShowContextPanel(true);
-      toast.success(`Loaded "${title}" from Notion`);
-    } catch (error) {
-      console.error('Error loading page:', error);
-      toast.error('Failed to load page content');
-    }
-  };
 
   // Clear context
   const clearContext = () => {
