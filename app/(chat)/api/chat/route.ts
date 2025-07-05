@@ -85,69 +85,87 @@ export async function POST(request: Request) {
       selectedVisibilityType: VisibilityType;
     } = requestBody;
 
-    const session = await auth();
+    // For demo purposes, bypass authentication
+    // const session = await auth();
+    // if (!session?.user) {
+    //   return new ChatSDKError('unauthorized:chat').toResponse();
+    // }
 
-    if (!session?.user) {
-      return new ChatSDKError('unauthorized:chat').toResponse();
-    }
+    // Create a mock session for demo
+    const session = {
+      user: {
+        id: 'demo-user',
+        type: 'guest' as UserType,
+        email: 'demo@example.com',
+        name: 'Demo User'
+      }
+    };
 
     const userType: UserType = session.user.type;
 
-    const messageCount = await getMessageCountByUserId({
-      id: session.user.id,
-      differenceInHours: 24,
-    });
+    // Skip rate limiting for demo
+    // const messageCount = await getMessageCountByUserId({
+    //   id: session.user.id,
+    //   differenceInHours: 24,
+    // });
+    // if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
+    //   return new ChatSDKError('rate_limit:chat').toResponse();
+    // }
 
-    if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
-      return new ChatSDKError('rate_limit:chat').toResponse();
-    }
+    // Skip database operations for demo
+    // const chat = await getChatById({ id });
+    // if (!chat) {
+    //   const title = await generateTitleFromUserMessage({
+    //     message,
+    //   });
+    //   await saveChat({
+    //     id,
+    //     userId: session.user.id,
+    //     title,
+    //     visibility: selectedVisibilityType,
+    //   });
+    // } else {
+    //   if (chat.userId !== session.user.id) {
+    //     return new ChatSDKError('forbidden:chat').toResponse();
+    //   }
+    // }
 
-    const chat = await getChatById({ id });
+    // Skip database message retrieval for demo
+    // const messagesFromDb = await getMessagesByChatId({ id });
+    const uiMessages = [message];
 
-    if (!chat) {
-      const title = await generateTitleFromUserMessage({
-        message,
-      });
+    // Extract user content for domain detection
+    const userContent = uiMessages
+      .filter(msg => msg.role === 'user')
+      .map(msg => msg.parts.map(part => part.type === 'text' ? part.text : '').join(' '))
+      .join(' ');
 
-      await saveChat({
-        id,
-        userId: session.user.id,
-        title,
-        visibility: selectedVisibilityType,
-      });
-    } else {
-      if (chat.userId !== session.user.id) {
-        return new ChatSDKError('forbidden:chat').toResponse();
-      }
-    }
-
-    const messagesFromDb = await getMessagesByChatId({ id });
-    const uiMessages = [...convertToUIMessages(messagesFromDb), message];
-
-    const { longitude, latitude, city, country } = geolocation(request);
-
+    // For demo, use default geolocation values
+    const geo = geolocation(request);
     const requestHints: RequestHints = {
-      longitude,
-      latitude,
-      city,
-      country,
+      longitude: geo?.longitude || '0',
+      latitude: geo?.latitude || '0',
+      city: geo?.city || 'Unknown',
+      country: geo?.country || 'Unknown',
     };
 
-    await saveMessages({
-      messages: [
-        {
-          chatId: id,
-          id: message.id,
-          role: 'user',
-          parts: message.parts,
-          attachments: [],
-          createdAt: new Date(),
-        },
-      ],
-    });
+    // Skip saving user message for demo
+    // await saveMessages({
+    //   messages: [
+    //     {
+    //       chatId: id,
+    //       id: message.id,
+    //       role: 'user',
+    //       parts: message.parts,
+    //       attachments: [],
+    //       createdAt: new Date(),
+    //     },
+    //   ],
+    // });
 
     const streamId = generateUUID();
-    await createStreamId({ streamId, chatId: id });
+    // Skip creating stream ID for demo
+    // await createStreamId({ streamId, chatId: id });
 
     console.log(JSON.stringify(uiMessages, null, 2));
 
@@ -155,7 +173,7 @@ export async function POST(request: Request) {
       execute: ({ writer: dataStream }) => {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints }),
+          system: systemPrompt({ selectedChatModel, requestHints, userContent }),
           messages: convertToModelMessages(uiMessages),
           stopWhen: stepCountIs(5),
           experimental_activeTools:
@@ -193,16 +211,17 @@ export async function POST(request: Request) {
       },
       generateId: generateUUID,
       onFinish: async ({ messages }) => {
-        await saveMessages({
-          messages: messages.map((message) => ({
-            id: message.id,
-            role: message.role,
-            parts: message.parts,
-            createdAt: new Date(),
-            attachments: [],
-            chatId: id,
-          })),
-        });
+        // Skip saving messages for demo
+        // await saveMessages({
+        //   messages: messages.map((message) => ({
+        //     id: message.id,
+        //     role: message.role,
+        //     parts: message.parts,
+        //     createdAt: new Date(),
+        //     attachments: [],
+        //     chatId: id,
+        //   })),
+        // });
       },
       onError: (error) => {
         console.log(error);
@@ -210,17 +229,14 @@ export async function POST(request: Request) {
       },
     });
 
-    const streamContext = getStreamContext();
-
-    if (streamContext) {
-      return new Response(
-        await streamContext.resumableStream(streamId, () =>
-          stream.pipeThrough(new JsonToSseTransformStream()),
-        ),
-      );
-    } else {
-      return new Response(stream);
-    }
+    // For demo, use simple streaming without Redis
+    return new Response(stream.pipeThrough(new JsonToSseTransformStream()), {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    });
   } catch (error) {
     if (error instanceof ChatSDKError) {
       return error.toResponse();

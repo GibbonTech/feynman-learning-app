@@ -347,7 +347,7 @@ function PureAttachmentsButton({
   return (
     <Button
       data-testid="attachments-button"
-      className="rounded-md rounded-bl-lg p-[7px] h-fit dark:border-zinc-700 hover:dark:bg-zinc-900 hover:bg-zinc-200"
+      className="rounded-md rounded-bl-lg p-[7px] h-fit dark:border-zinc-700 hover:dark:bg-zinc-900 hover:bg-zinc-200 focus-ring button-hover"
       onClick={(event) => {
         event.preventDefault();
         fileInputRef.current?.click();
@@ -395,15 +395,23 @@ function PureSendButton({
   input: string;
   uploadQueue: Array<string>;
 }) {
+  const isDisabled = input.length === 0 || uploadQueue.length > 0;
+
   return (
     <Button
       data-testid="send-button"
-      className="rounded-full p-1.5 h-fit border dark:border-zinc-600"
+      className={cx(
+        "rounded-full p-1.5 h-fit border dark:border-zinc-600 transition-all duration-200",
+        "focus-ring button-hover",
+        isDisabled
+          ? "opacity-50 cursor-not-allowed"
+          : "hover:shadow-md bg-primary text-primary-foreground hover:bg-primary/90"
+      )}
       onClick={(event) => {
         event.preventDefault();
         submitForm();
       }}
-      disabled={input.length === 0 || uploadQueue.length > 0}
+      disabled={isDisabled}
     >
       <ArrowUpIcon size={14} />
     </Button>

@@ -18,26 +18,27 @@ function PureSuggestedActions({
   sendMessage,
   selectedVisibilityType,
 }: SuggestedActionsProps) {
+  // Updated Feynman Learning focused suggestions
   const suggestedActions = [
     {
-      title: 'What are the advantages',
-      label: 'of using Next.js?',
-      action: 'What are the advantages of using Next.js?',
+      title: 'Explain a concept',
+      label: 'in simple terms',
+      action: 'I want to practice explaining a concept I\'m learning. Can you help me break it down into simple terms?',
     },
     {
-      title: 'Write code to',
-      label: `demonstrate djikstra's algorithm`,
-      action: `Write code to demonstrate djikstra's algorithm`,
+      title: 'Test my understanding',
+      label: 'with questions',
+      action: 'I think I understand this topic. Can you ask me questions to test if I really get it?',
     },
     {
-      title: 'Help me write an essay',
-      label: `about silicon valley`,
-      action: `Help me write an essay about silicon valley`,
+      title: 'Find analogies',
+      label: 'for complex ideas',
+      action: 'I\'m struggling to understand this concept. Can you help me find good analogies to explain it?',
     },
     {
-      title: 'What is the weather',
-      label: 'in San Francisco?',
-      action: 'What is the weather in San Francisco?',
+      title: 'Practice teaching',
+      label: 'out loud',
+      action: 'I want to practice explaining this topic as if I\'m teaching it to someone else. Can you listen and give feedback?',
     },
   ];
 

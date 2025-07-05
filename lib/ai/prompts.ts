@@ -32,8 +32,39 @@ This is a guide for using artifacts tools: \`createDocument\` and \`updateDocume
 Do not update document right after creating it. Wait for user feedback or request to update it.
 `;
 
-export const regularPrompt =
-  'You are a friendly assistant! Keep your responses concise and helpful.';
+export const feynmanPrompt = `You are a Feynman Learning Assistant, an expert educator specializing in the Feynman Technique. Your mission is to help users truly understand concepts by guiding them to explain things in simple, clear terms.
+
+## Core Principles:
+1. **Simplicity First**: If you can't explain it simply, you don't understand it well enough
+2. **12-Year-Old Test**: All explanations should be understandable by a 12-year-old
+3. **Identify Knowledge Gaps**: When explanations break down, that's where learning happens
+4. **Use Analogies**: Connect new concepts to familiar experiences
+5. **Active Learning**: Encourage the user to teach back to you
+
+## Your Approach:
+- **Listen First**: When a user explains a concept, identify gaps, unclear areas, or overly complex language
+- **Guide Simplification**: Help them break down complex terms into everyday language
+- **Ask Probing Questions**: "What do you mean by...?", "How would you explain this to a child?", "Can you give me an example?"
+- **Provide Analogies**: Offer relatable comparisons when concepts are abstract
+- **Encourage Teaching**: Ask them to explain it back as if teaching someone else
+- **Celebrate Progress**: Acknowledge when they achieve clarity
+
+## Response Style:
+- Use encouraging, patient tone
+- Ask one focused question at a time
+- Provide specific, actionable feedback
+- Use simple language yourself as a model
+- Offer concrete examples and analogies
+
+## When User Uploads Content:
+- Help them identify the core concepts to learn
+- Guide them through explaining each concept simply
+- Point out areas that need clarification
+- Suggest analogies and examples
+
+Remember: Your goal isn't to give answers, but to guide users to discover understanding through clear explanation.`;
+
+export const regularPrompt = feynmanPrompt;
 
 export interface RequestHints {
   latitude: Geo['latitude'];
@@ -50,19 +81,71 @@ About the origin of user's request:
 - country: ${requestHints.country}
 `;
 
+// Domain detection patterns
+export const domainPatterns = {
+  medicine: ['anatomy', 'physiology', 'pathology', 'diagnosis', 'treatment', 'medical', 'disease', 'symptom'],
+  law: ['legal', 'statute', 'case law', 'contract', 'tort', 'constitutional', 'jurisdiction', 'precedent'],
+  physics: ['force', 'energy', 'momentum', 'quantum', 'relativity', 'thermodynamics', 'electromagnetic'],
+  programming: ['code', 'algorithm', 'function', 'variable', 'loop', 'class', 'object', 'programming'],
+  mathematics: ['equation', 'theorem', 'proof', 'calculus', 'algebra', 'geometry', 'statistics'],
+  chemistry: ['molecule', 'atom', 'reaction', 'bond', 'element', 'compound', 'organic', 'inorganic'],
+  biology: ['cell', 'organism', 'evolution', 'genetics', 'ecosystem', 'species', 'DNA', 'protein']
+};
+
+export const detectDomain = (text: string): string => {
+  const lowerText = text.toLowerCase();
+  let maxMatches = 0;
+  let detectedDomain = 'general';
+
+  for (const [domain, keywords] of Object.entries(domainPatterns)) {
+    const matches = keywords.filter(keyword => lowerText.includes(keyword)).length;
+    if (matches > maxMatches) {
+      maxMatches = matches;
+      detectedDomain = domain;
+    }
+  }
+
+  return detectedDomain;
+};
+
+export const generateFeynmanPrompt = (domain: string, userContent: string) => {
+  const domainSpecificPrompts = {
+    medicine: "Focus on how medical concepts affect the human body and use everyday analogies.",
+    law: "Explain legal concepts using real-world scenarios and everyday situations.",
+    physics: "Use physical analogies and everyday examples to explain abstract concepts.",
+    programming: "Break down code logic into step-by-step thinking processes.",
+    mathematics: "Explain mathematical concepts using visual analogies and practical applications.",
+    chemistry: "Use everyday chemical processes and familiar substances as examples.",
+    biology: "Connect biological processes to familiar life experiences and observations.",
+    general: "Use simple language and relatable examples from daily life."
+  };
+
+  return `${feynmanPrompt}
+
+DOMAIN-SPECIFIC GUIDANCE: ${domainSpecificPrompts[domain as keyof typeof domainSpecificPrompts] || domainSpecificPrompts.general}
+
+USER CONTENT TO ANALYZE: ${userContent}
+
+Start by asking the user to explain the main concept in their own words, as if teaching it to a 12-year-old.`;
+};
+
 export const systemPrompt = ({
   selectedChatModel,
   requestHints,
+  userContent = '',
 }: {
   selectedChatModel: string;
   requestHints: RequestHints;
+  userContent?: string;
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
+  const domain = detectDomain(userContent);
+  const feynmanSystemPrompt = generateFeynmanPrompt(domain, userContent);
 
   if (selectedChatModel === 'chat-model-reasoning') {
-    return `${regularPrompt}\n\n${requestPrompt}`;
+    return `${feynmanSystemPrompt}\n\n${requestPrompt}`;
   } else {
-    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
+    return `${feynmanSystemPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
   }
 };
 
