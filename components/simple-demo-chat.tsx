@@ -4,8 +4,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Brain, Send, Loader2, Volume2, VolumeX, Upload, FileText, BookOpen, X } from 'lucide-react';
-import { VoiceControls } from './voice-controls';
+import { Brain, Send, Loader2, Volume2, VolumeX, Upload, FileText, BookOpen, X, Mic, Paperclip } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Message {
@@ -91,9 +90,60 @@ export function SimpleDemoChat() {
     sendMessage(input);
   };
 
-  const handleVoiceTranscript = (transcript: string) => {
-    setInput(transcript);
-    sendMessage(transcript);
+  // Audio file upload handler
+  const handleAudioUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ['audio/wav', 'audio/mp3', 'audio/mpeg', 'audio/webm', 'audio/ogg', 'audio/mp4', 'audio/m4a'];
+    const isAllowed = allowedTypes.some(type => file.type.includes(type.split('/')[1]));
+
+    if (!isAllowed) {
+      toast.error('Please upload audio files only (MP3, WAV, WebM, OGG, MP4)');
+      return;
+    }
+
+    // Check file size (max 25MB)
+    const maxSize = 25 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error('Audio file too large. Maximum size: 25MB');
+      return;
+    }
+
+    setIsLoading(true);
+    toast.info('Transcribing audio...');
+
+    try {
+      const formData = new FormData();
+      formData.append('audio', file);
+
+      const response = await fetch('/api/voice/transcribe', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Transcription failed');
+      }
+
+      const result = await response.json();
+
+      if (result.transcript && result.transcript.trim()) {
+        setInput(result.transcript);
+        toast.success('Audio transcribed successfully!');
+      } else {
+        toast.error('No speech detected in audio file');
+      }
+
+    } catch (error) {
+      console.error('Audio transcription error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to transcribe audio');
+    } finally {
+      setIsLoading(false);
+      // Reset the input
+      event.target.value = '';
+    }
   };
 
   const playText = async (text: string) => {
@@ -270,7 +320,7 @@ export function SimpleDemoChat() {
               <p className="text-gray-500 dark:text-gray-400 mb-4">
                 {context
                   ? `Ask me to explain concepts from "${contextTitle}"`
-                  : "Upload study materials above, then ask me to explain concepts using the Feynman Technique"
+                  : "Upload study materials or audio files, then ask me to explain concepts using the Feynman Technique"
                 }
               </p>
             </div>
@@ -339,34 +389,57 @@ export function SimpleDemoChat() {
           )}
         </div>
 
-        {/* Voice Controls */}
-        <div className="flex justify-center mb-4">
-          <VoiceControls
-            onTranscript={handleVoiceTranscript}
-            lastMessage={lastAssistantMessage}
-          />
-        </div>
+
 
         {/* Input Area */}
         <div className="border border-gray-200 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-900 shadow-sm">
           <form onSubmit={handleSubmit} className="flex items-end gap-3 p-4">
-            <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask me to explain something..."
-              className="flex-1 min-h-[20px] max-h-32 resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSubmit(e);
-                }
-              }}
-            />
+            <div className="flex-1 space-y-2">
+              <Textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Ask me to explain something or upload an audio file..."
+                className="min-h-[20px] max-h-32 resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmit(e);
+                  }
+                }}
+              />
+
+              {/* Audio Upload Section */}
+              <div className="flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+                <input
+                  type="file"
+                  accept="audio/*"
+                  onChange={handleAudioUpload}
+                  className="hidden"
+                  id="audio-upload"
+                  disabled={isLoading}
+                />
+                <label
+                  htmlFor="audio-upload"
+                  className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg cursor-pointer transition-colors ${
+                    isLoading
+                      ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed'
+                      : 'bg-blue-50 dark:bg-blue-950/30 hover:bg-blue-100 dark:hover:bg-blue-950/50 text-blue-700 dark:text-blue-300'
+                  }`}
+                >
+                  <Mic className="w-4 h-4" />
+                  Upload Audio
+                </label>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  MP3, WAV, WebM, OGG (max 25MB)
+                </span>
+              </div>
+            </div>
+
             <Button
               type="submit"
               disabled={!input.trim() || isLoading}
               size="sm"
-              className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white border-0 px-4 py-2"
+              className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white border-0 px-4 py-2 self-end"
             >
               {isLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />

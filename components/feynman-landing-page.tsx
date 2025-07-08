@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Brain, ArrowRight, Upload, BookOpen, Mic2 } from 'lucide-react';
+import { Brain, ArrowRight, Upload, BookOpen, FileAudio } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { FileUpload } from './file-upload';
@@ -24,9 +24,9 @@ export function FeynmanLandingPage() {
       description: "Get concepts explained in simple, 12-year-old friendly language",
     },
     {
-      icon: Mic2,
-      title: "Voice Interaction",
-      description: "Speak your questions and listen to AI responses",
+      icon: FileAudio,
+      title: "Audio Transcription",
+      description: "Upload audio files to convert speech to text for learning",
     },
     {
       icon: BookOpen,
@@ -155,7 +155,7 @@ export function FeynmanLandingPage() {
 
             <div className="text-center">
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                ✨ AI-powered explanations • 🎤 Voice interaction • 📝 Markdown support
+                ✨ AI-powered explanations • 🎵 Audio transcription • 📝 Markdown support
               </p>
             </div>
           </div>
