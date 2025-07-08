@@ -20,11 +20,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate file type
-    const validTypes = ['audio/wav', 'audio/mp3', 'audio/mpeg', 'audio/webm', 'audio/ogg'];
-    if (!validTypes.includes(audioFile.type)) {
+    // Validate file type - be more permissive for different browser formats
+    const validTypes = [
+      'audio/wav', 'audio/mp3', 'audio/mpeg', 'audio/webm', 'audio/ogg',
+      'audio/mp4', 'audio/m4a', 'audio/x-wav', 'audio/x-m4a'
+    ];
+
+    const isValidType = validTypes.some(type => audioFile.type.includes(type.split('/')[1]));
+
+    if (!isValidType && audioFile.type !== '') {
+      console.log('🎤 Received unsupported file type:', audioFile.type);
       return NextResponse.json(
-        { error: 'Invalid audio file type. Supported: WAV, MP3, WebM, OGG' },
+        { error: `Unsupported audio file type: ${audioFile.type}. Supported: WAV, MP3, WebM, OGG, MP4` },
         { status: 400 }
       );
     }
@@ -57,25 +64,43 @@ export async function POST(request: NextRequest) {
     // Prepare form data for Groq Whisper API
     const formData = new FormData();
 
-    // Ensure proper file naming and type
+    // Ensure proper file naming and type for Groq Whisper compatibility
     let fileName = 'recording.webm';
-    let fileType = audioFile.type;
+    let fileType = 'audio/webm';
 
-    // Map common types to Groq-supported formats
-    if (audioFile.type.includes('webm')) {
+    // Map common types to Groq-supported formats with proper extensions
+    const originalType = audioFile.type.toLowerCase();
+
+    if (originalType.includes('webm')) {
       fileName = 'recording.webm';
       fileType = 'audio/webm';
-    } else if (audioFile.type.includes('wav')) {
+    } else if (originalType.includes('wav')) {
       fileName = 'recording.wav';
       fileType = 'audio/wav';
-    } else if (audioFile.type.includes('mp4')) {
-      fileName = 'recording.mp4';
-      fileType = 'audio/mp4';
-    } else if (audioFile.type.includes('ogg')) {
+    } else if (originalType.includes('mp4') || originalType.includes('m4a')) {
+      fileName = 'recording.m4a';
+      fileType = 'audio/m4a';
+    } else if (originalType.includes('ogg')) {
       fileName = 'recording.ogg';
       fileType = 'audio/ogg';
+    } else if (originalType.includes('mpeg') || originalType.includes('mp3')) {
+      fileName = 'recording.mp3';
+      fileType = 'audio/mpeg';
+    } else if (originalType === '' || originalType === 'application/octet-stream') {
+      // Handle cases where browser doesn't set proper MIME type
+      fileName = 'recording.webm';
+      fileType = 'audio/webm';
+      console.log('🎤 No MIME type detected, defaulting to webm');
+    } else {
+      // Default to webm for unknown types
+      fileName = 'recording.webm';
+      fileType = 'audio/webm';
+      console.log('🎤 Unknown MIME type, defaulting to webm:', originalType);
     }
 
+    console.log('🎤 Converting file type from', audioFile.type, 'to', fileType, 'with filename', fileName);
+
+    // Create a new file with proper type and name for Groq
     const audioFileForGroq = new File([audioFile], fileName, { type: fileType });
 
     formData.append('file', audioFileForGroq);

@@ -41,15 +41,17 @@ export function useVoice({ onTranscript, onError }: UseVoiceOptions = {}) {
       // Reset audio chunks
       audioChunksRef.current = [];
 
-      // Create MediaRecorder with Groq-compatible formats
+      // Create MediaRecorder with Groq Whisper-compatible formats
       let mediaRecorder;
       const options = [
         { mimeType: 'audio/webm;codecs=opus' },
         { mimeType: 'audio/webm' },
         { mimeType: 'audio/ogg;codecs=opus' },
+        { mimeType: 'audio/ogg' },
         { mimeType: 'audio/mp4' },
+        { mimeType: 'audio/mpeg' },
         { mimeType: 'audio/wav' },
-        {}
+        {} // Fallback to default
       ];
 
       console.log('🎤 Testing MediaRecorder format support...');
@@ -157,9 +159,25 @@ export function useVoice({ onTranscript, onError }: UseVoiceOptions = {}) {
       console.log('🎤 Transcription API response status:', response.status);
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorText = await response.text();
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { error: errorText };
+        }
         console.error('🎤 Transcription API error:', errorData);
-        throw new Error(errorData.error || 'Transcription failed');
+
+        // Provide more specific error messages
+        if (response.status === 400) {
+          throw new Error(errorData.error || 'Invalid audio format. Please try again.');
+        } else if (response.status === 401) {
+          throw new Error('API authentication failed. Please check configuration.');
+        } else if (response.status === 413) {
+          throw new Error('Audio file too large. Please record a shorter message.');
+        } else {
+          throw new Error(errorData.error || `Transcription failed (${response.status})`);
+        }
       }
 
       const result = await response.json();
