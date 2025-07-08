@@ -22,6 +22,7 @@ export function SimpleDemoChat() {
   const [context, setContext] = useState<string>('');
   const [contextTitle, setContextTitle] = useState<string>('');
   const [showContextPanel, setShowContextPanel] = useState(false);
+  const [notionPages] = useState<any[]>([]);
 
 
   const sendMessage = async (messageText: string) => {
@@ -132,6 +133,11 @@ export function SimpleDemoChat() {
   };
 
   const lastAssistantMessage = messages.filter(m => m.role === 'assistant').pop()?.content;
+
+  const loadNotionPage = (pageId: string, title: string) => {
+    // Placeholder function for Notion page loading
+    console.log('Loading Notion page:', pageId, title);
+  };
 
 
 
@@ -264,32 +270,9 @@ export function SimpleDemoChat() {
               <p className="text-gray-500 dark:text-gray-400 mb-4">
                 {context
                   ? `Ask me to explain concepts from "${contextTitle}"`
-                  : "Add study material, then ask me to explain concepts using the Feynman Technique"
+                  : "Upload study materials above, then ask me to explain concepts using the Feynman Technique"
                 }
               </p>
-              <div className="space-y-3">
-                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg px-4 py-2 text-sm text-gray-600 dark:text-gray-300">
-                  {context
-                    ? 'Try: "Explain this concept like I\'m 12"'
-                    : 'Try: "Explain quantum physics like I\'m 12"'
-                  }
-                </div>
-                {!context && (
-                  <div className="space-y-3">
-                    <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 text-sm">
-                      <div className="font-medium text-blue-900 dark:text-blue-100 mb-2">📚 How to add your study materials:</div>
-                      <div className="space-y-1 text-blue-700 dark:text-blue-300">
-                        <div>1. <strong>From Notion:</strong> Export page as Markdown → Upload here</div>
-                        <div>2. <strong>From files:</strong> Upload .md or .markdown files directly</div>
-                        <div>3. <strong>Ask questions:</strong> Get focused explanations using Feynman Technique</div>
-                      </div>
-                    </div>
-                    <div className="text-xs text-center text-gray-400 dark:text-gray-500">
-                      AI responses optimized for concise, focused explanations
-                    </div>
-                  </div>
-                )}
-              </div>
             </div>
           )}
 

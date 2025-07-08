@@ -41,20 +41,49 @@ export function useVoice({ onTranscript, onError }: UseVoiceOptions = {}) {
       // Reset audio chunks
       audioChunksRef.current = [];
 
-      // Create MediaRecorder
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus'
-      });
+      // Create MediaRecorder with Groq-compatible formats
+      let mediaRecorder;
+      const options = [
+        { mimeType: 'audio/webm;codecs=opus' },
+        { mimeType: 'audio/webm' },
+        { mimeType: 'audio/ogg;codecs=opus' },
+        { mimeType: 'audio/mp4' },
+        { mimeType: 'audio/wav' },
+        {}
+      ];
+
+      console.log('🎤 Testing MediaRecorder format support...');
+      for (const option of options) {
+        try {
+          const isSupported = !option.mimeType || MediaRecorder.isTypeSupported(option.mimeType);
+          console.log(`🎤 Format ${option.mimeType || 'default'}: ${isSupported ? 'supported' : 'not supported'}`);
+
+          if (isSupported) {
+            mediaRecorder = new MediaRecorder(stream, option);
+            console.log('🎤 Using audio format:', option.mimeType || 'default');
+            break;
+          }
+        } catch (e) {
+          console.log(`🎤 Error testing format ${option.mimeType}:`, e);
+          continue;
+        }
+      }
+
+      if (!mediaRecorder) {
+        throw new Error('No supported audio format found');
+      }
 
       mediaRecorderRef.current = mediaRecorder;
 
       mediaRecorder.ondataavailable = (event) => {
+        console.log('🎤 Data available:', event.data.size, 'bytes');
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data);
         }
       };
 
       mediaRecorder.onstop = async () => {
+        console.log('🎤 Recording stopped, processing audio...');
         // Stop all tracks to release microphone
         stream.getTracks().forEach(track => track.stop());
 
@@ -70,6 +99,7 @@ export function useVoice({ onTranscript, onError }: UseVoiceOptions = {}) {
 
       // Start recording
       mediaRecorder.start();
+      console.log('🎤 Recording started with format:', mediaRecorder.mimeType);
 
     } catch (error) {
       console.error('Error starting recording:', error);
@@ -91,37 +121,60 @@ export function useVoice({ onTranscript, onError }: UseVoiceOptions = {}) {
     }
 
     setIsProcessing(true);
+    console.log('🎤 Processing recording with', audioChunksRef.current.length, 'chunks');
 
     try {
-      // Create audio blob
-      const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+      // Create audio blob with detected MIME type
+      const mimeType = audioChunksRef.current[0]?.type || 'audio/webm';
+      const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+
+      console.log('🎤 Audio blob created:', {
+        size: audioBlob.size,
+        type: audioBlob.type,
+        mimeType: mimeType
+      });
+
+      // Validate audio blob size
+      if (audioBlob.size === 0) {
+        throw new Error('No audio data recorded');
+      }
 
       // Create form data
       const formData = new FormData();
-      formData.append('audio', audioBlob, 'recording.webm');
+      const extension = mimeType.includes('wav') ? '.wav' :
+                       mimeType.includes('mp4') ? '.mp4' :
+                       mimeType.includes('ogg') ? '.ogg' : '.webm';
+      formData.append('audio', audioBlob, `recording${extension}`);
 
-      // Send to transcription API (using test endpoint for demo)
-      const response = await fetch('/api/voice/test', {
+      console.log('🎤 Sending to transcription API...');
+
+      // Send to transcription API
+      const response = await fetch('/api/voice/transcribe', {
         method: 'POST',
         body: formData,
       });
 
+      console.log('🎤 Transcription API response status:', response.status);
+
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('🎤 Transcription API error:', errorData);
         throw new Error(errorData.error || 'Transcription failed');
       }
 
       const result = await response.json();
+      console.log('🎤 Transcription result:', result);
 
       if (result.transcript && result.transcript.trim()) {
         setTranscript(result.transcript);
         onTranscript?.(result.transcript);
+        console.log('🎤 Transcription successful:', result.transcript);
       } else {
         onError?.('No speech detected. Please try speaking more clearly.');
       }
 
     } catch (error) {
-      console.error('Transcription error:', error);
+      console.error('🎤 Transcription error:', error);
       onError?.(error instanceof Error ? error.message : 'Failed to transcribe audio');
     } finally {
       setIsProcessing(false);
@@ -130,6 +183,7 @@ export function useVoice({ onTranscript, onError }: UseVoiceOptions = {}) {
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      console.log('🎤 Stopping recording...');
       mediaRecorderRef.current.stop();
       mediaRecorderRef.current = null;
     }

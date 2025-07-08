@@ -2,15 +2,14 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Brain, Lightbulb, MessageSquare, Mic, ArrowRight, FileText, Upload } from 'lucide-react';
+import { Brain, ArrowRight, Upload, BookOpen, Mic2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { NotionConnector } from './notion-connector';
 import { FileUpload } from './file-upload';
 
 export function FeynmanLandingPage() {
   const router = useRouter();
-  const [showImports, setShowImports] = useState<'notion' | 'files' | false>(false);
+  const [showFileUpload, setShowFileUpload] = useState(false);
 
   const handleContentImport = (content: string, title: string) => {
     // Navigate to chat with imported content
@@ -18,26 +17,21 @@ export function FeynmanLandingPage() {
     router.push(`/chat/${chatId}?content=${encodeURIComponent(content)}&title=${encodeURIComponent(title)}`);
   };
 
-  const examples = [
+  const features = [
     {
       icon: Brain,
-      title: "Explain a Complex Concept",
-      description: "Break down difficult topics into simple terms",
+      title: "AI-Powered Explanations",
+      description: "Get concepts explained in simple, 12-year-old friendly language",
     },
     {
-      icon: Lightbulb,
-      title: "Test Your Understanding",
-      description: "Check if you really understand what you've learned",
+      icon: Mic2,
+      title: "Voice Interaction",
+      description: "Speak your questions and listen to AI responses",
     },
     {
-      icon: MessageSquare,
-      title: "Learn Through Analogies",
-      description: "Use everyday examples to grasp new ideas",
-    },
-    {
-      icon: Mic,
-      title: "Practice Speaking",
-      description: "Use voice to practice explaining concepts aloud",
+      icon: BookOpen,
+      title: "Study Material Import",
+      description: "Upload markdown files from Obsidian, Notion, or any text editor",
     }
   ];
 
@@ -46,153 +40,124 @@ export function FeynmanLandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto text-center space-y-12">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-5xl mx-auto space-y-16">
 
           {/* Hero Section */}
-          <div className="space-y-6 animate-in fade-in-50 duration-700">
-            <div className="flex items-center justify-center gap-4 mb-8">
-              <Brain className="w-16 h-16 text-primary animate-pulse" />
-              <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Feynman Learning Assistant
+          <div className="text-center space-y-8 animate-in fade-in-50 duration-700">
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <Brain className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white">
+                Feynman Learning Demo
               </h1>
             </div>
 
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Master any concept by explaining it in simple terms. If you can't explain it simply, you don't understand it well enough.
+            <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+              Learn any concept by explaining it simply. Upload your study materials and get AI-powered explanations using the Feynman Technique.
             </p>
-          </div>
 
-          {/* How it Works */}
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl p-8 border shadow-lg animate-in fade-in-50 duration-700 delay-200">
-            <h2 className="text-2xl font-bold mb-8">How the Feynman Technique Works</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="text-center space-y-4">
-                <div className="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center mx-auto text-lg font-bold">1</div>
-                <h3 className="text-lg font-semibold">Choose a Concept</h3>
-                <p className="text-muted-foreground">Pick something you want to learn</p>
-              </div>
-              <div className="text-center space-y-4">
-                <div className="w-12 h-12 bg-purple-500 text-white rounded-full flex items-center justify-center mx-auto text-lg font-bold">2</div>
-                <h3 className="text-lg font-semibold">Explain Simply</h3>
-                <p className="text-muted-foreground">Teach it like you're talking to a child</p>
-              </div>
-              <div className="text-center space-y-4">
-                <div className="w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center mx-auto text-lg font-bold">3</div>
-                <h3 className="text-lg font-semibold">Fill the Gaps</h3>
-                <p className="text-muted-foreground">Identify and study what you don't know</p>
-              </div>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Button
+                onClick={handleStartLearning}
+                size="lg"
+                className="text-lg px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                Try Demo Now
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                No signup required • Free to use
+              </p>
             </div>
           </div>
 
-          {/* Learning Approaches */}
-          <div className="space-y-8 animate-in fade-in-50 duration-700 delay-400">
-            <h2 className="text-2xl font-bold">Try these learning approaches:</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {examples.map((example, index) => (
-                <Card key={index} className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/20 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <example.icon className="w-8 h-8 text-primary mt-1 flex-shrink-0 transition-transform duration-200" />
-                      <div className="space-y-2">
-                        <h3 className="text-lg font-semibold group-hover:text-primary transition-colors duration-200">{example.title}</h3>
-                        <p className="text-muted-foreground">{example.description}</p>
-                      </div>
-                    </div>
+          {/* Features */}
+          <div className="space-y-8 animate-in fade-in-50 duration-700 delay-200">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">What makes this demo special?</h2>
+              <p className="text-gray-600 dark:text-gray-300">Experience the Feynman Technique with AI assistance</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {features.map((feature, index) => (
+                <Card key={index} className="group hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+                  <CardContent className="p-6 text-center">
+                    <feature.icon className="w-10 h-10 text-blue-600 dark:text-blue-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{feature.title}</h3>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm">{feature.description}</p>
                   </CardContent>
                 </Card>
               ))}
             </div>
           </div>
 
-          {/* Voice Feature Highlight */}
-          <div className="bg-gradient-to-r from-green-100 to-blue-100 dark:from-green-900/20 dark:to-blue-900/20 rounded-2xl p-8 border animate-in fade-in-50 duration-700 delay-600">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <Mic className="w-8 h-8 text-primary animate-pulse" />
-              <h3 className="text-xl font-semibold">Voice-First Learning</h3>
-            </div>
-            <p className="text-muted-foreground mb-6">
-              Use natural voice input for a more engaging learning conversation. Speak your thoughts and get instant feedback.
-            </p>
-          </div>
-
           {/* Import Content Section */}
-          <div className="space-y-6 animate-in fade-in-50 duration-700 delay-700">
-            <h2 className="text-2xl font-bold">Import Your Study Materials</h2>
-            <p className="text-muted-foreground">
-              Start learning from your existing notes, documents, or Notion pages
-            </p>
+          <div className="space-y-8 animate-in fade-in-50 duration-700 delay-400">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Import Your Study Materials</h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-2">
+                Upload markdown files from Obsidian, Notion exports, or any text editor to start learning
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                💡 <strong>Tip:</strong> Export your notes from Notion or Obsidian as .md files, then upload them here
+              </p>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/20 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <FileText className="w-8 h-8 text-primary mt-1 flex-shrink-0" />
-                    <div className="space-y-3 flex-1">
-                      <h3 className="text-lg font-semibold">Import from Notion</h3>
-                      <p className="text-muted-foreground text-sm">Connect your Notion workspace and import pages for learning</p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setShowImports(prev => prev === 'notion' ? false : 'notion')}
-                        className="w-full"
-                      >
-                        {showImports === 'notion' ? 'Hide' : 'Connect Notion'}
-                      </Button>
+            <div className="max-w-2xl mx-auto">
+              <Card className="group hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-blue-300 dark:hover:border-blue-600">
+                <CardContent className="p-8">
+                  <div className="text-center space-y-4">
+                    <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mx-auto">
+                      <Upload className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/20 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <Upload className="w-8 h-8 text-primary mt-1 flex-shrink-0" />
-                    <div className="space-y-3 flex-1">
-                      <h3 className="text-lg font-semibold">Upload Files</h3>
-                      <p className="text-muted-foreground text-sm">Upload PDFs, documents, or text files to learn from</p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setShowImports(prev => prev === 'files' ? false : 'files')}
-                        className="w-full"
-                      >
-                        {showImports === 'files' ? 'Hide' : 'Upload Files'}
-                      </Button>
-                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Upload Markdown Files</h3>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                      Upload .md files from Obsidian, Notion exports, or any markdown editor
+                    </p>
+                    <Button
+                      variant={showFileUpload ? 'default' : 'outline'}
+                      onClick={() => setShowFileUpload(prev => !prev)}
+                      className="w-full mt-4"
+                    >
+                      {showFileUpload ? 'Hide File Upload' : 'Upload Files'}
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Import Components */}
-            {showImports === 'notion' && (
-              <div className="animate-in fade-in-50 duration-300">
-                <NotionConnector onPageSelect={handleContentImport} />
-              </div>
-            )}
-
-            {showImports === 'files' && (
-              <div className="animate-in fade-in-50 duration-300">
+            {/* File Upload Component */}
+            {showFileUpload && (
+              <div className="animate-in fade-in-50 duration-300 max-w-2xl mx-auto">
                 <FileUpload onFileContent={handleContentImport} />
               </div>
             )}
           </div>
 
-          {/* CTA Button */}
-          <div className="pt-8 animate-in fade-in-50 duration-700 delay-700">
-            <Button
-              onClick={handleStartLearning}
-              size="lg"
-              className="text-lg px-8 py-6 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 group"
-            >
-              Start Learning with AI
-              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
-            </Button>
-            <p className="text-sm text-muted-foreground mt-4">
-              No signup required • Free to use • Voice-enabled
-            </p>
+          {/* Demo CTA */}
+          <div className="text-center space-y-6 animate-in fade-in-50 duration-700 delay-500">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-8 border border-blue-200 dark:border-blue-800">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                Ready to experience the Feynman Technique?
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                Start with the demo or import your study materials above
+              </p>
+              <Button
+                onClick={handleStartLearning}
+                size="lg"
+                className="text-lg px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group"
+              >
+                Launch Demo
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
+              </Button>
+            </div>
+
+            <div className="text-center">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                ✨ AI-powered explanations • 🎤 Voice interaction • 📝 Markdown support
+              </p>
+            </div>
           </div>
 
         </div>

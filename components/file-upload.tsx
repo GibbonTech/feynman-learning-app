@@ -33,14 +33,14 @@ export function FileUpload({ onFileContent }: FileUploadProps) {
 
   const handleFileSelect = (files: FileList | null) => {
     if (!files) return;
-    
+
     Array.from(files).forEach(file => {
-      if (file.type === 'text/plain' || file.name.endsWith('.md') || file.name.endsWith('.txt')) {
+      if (file.name.endsWith('.md') || file.name.endsWith('.markdown') || file.type === 'text/plain') {
         handleFileRead(file);
       } else {
         toast({
           type: 'error',
-          description: `Unsupported file type: ${file.name}. Please upload .txt or .md files.`,
+          description: `Please upload markdown files (.md, .markdown) only. Export from Obsidian or Notion as markdown.`,
         });
       }
     });
@@ -67,21 +67,21 @@ export function FileUpload({ onFileContent }: FileUploadProps) {
   };
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-lg">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Upload className="w-5 h-5" />
-          Upload Study Notes
+          Upload Markdown Files
         </CardTitle>
         <CardDescription>
-          Upload text files (.txt, .md) containing study materials to learn with the Feynman Technique.
+          Upload .md files from Obsidian, Notion exports, or any markdown editor to start learning with the Feynman Technique.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div
           className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-            isDragging 
-              ? 'border-primary bg-primary/5' 
+            isDragging
+              ? 'border-primary bg-primary/5'
               : 'border-muted-foreground/25 hover:border-muted-foreground/50'
           }`}
           onDrop={handleDrop}
@@ -89,25 +89,28 @@ export function FileUpload({ onFileContent }: FileUploadProps) {
           onDragLeave={handleDragLeave}
         >
           <FileText className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground mb-3">
-            Drag and drop files here, or click to select
+          <p className="text-sm text-muted-foreground mb-1">
+            Drag and drop markdown files here, or click to select
+          </p>
+          <p className="text-xs text-muted-foreground mb-3">
+            Supports .md and .markdown files from Obsidian, Notion, etc.
           </p>
           <Button
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
           >
-            Choose Files
+            Choose Markdown Files
           </Button>
           <input
             ref={fileInputRef}
             type="file"
             multiple
-            accept=".txt,.md"
+            accept=".md,.markdown"
             className="hidden"
             onChange={(e) => handleFileSelect(e.target.files)}
           />
         </div>
-        
+
         {uploadedFiles.length > 0 && (
           <div className="mt-4">
             <div className="flex items-center justify-between mb-2">

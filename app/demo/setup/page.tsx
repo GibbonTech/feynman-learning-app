@@ -1,5 +1,7 @@
 import { NotionSetupGuide } from '@/components/notion-setup-guide';
 
+export const dynamic = 'force-dynamic';
+
 export default function DemoSetupPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 py-12">
@@ -12,12 +14,12 @@ export default function DemoSetupPage() {
             Set up Notion integration to allow users to connect their workspaces and import study materials.
           </p>
         </div>
-        
+
         <NotionSetupGuide />
-        
+
         <div className="text-center mt-8">
-          <a 
-            href="/demo" 
+          <a
+            href="/demo"
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             ← Back to Demo
