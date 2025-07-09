@@ -1,5 +1,5 @@
-import { FeynmanLandingPage } from '@/components/feynman-landing-page';
+import { BentoLandingPage } from '@/components/bento-landing-page';
 
 export default async function Page() {
-  return <FeynmanLandingPage />;
+  return <BentoLandingPage />;
 }

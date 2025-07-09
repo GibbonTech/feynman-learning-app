@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { groq } from '@ai-sdk/groq';
-import { generateText } from 'ai';
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,31 +11,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const groqApiKey = process.env.GROQ_API_KEY;
+    const blackboxApiKey = process.env.BLACKBOX_API_KEY;
 
     console.log('Environment check:');
-    console.log('- GROQ_API_KEY exists:', !!groqApiKey);
-    console.log('- GROQ_API_KEY length:', groqApiKey?.length);
-    console.log('- GROQ_API_KEY starts with gsk_:', groqApiKey?.startsWith('gsk_'));
+    console.log('- BLACKBOX_API_KEY exists:', !!blackboxApiKey);
+    console.log('- BLACKBOX_API_KEY length:', blackboxApiKey?.length);
 
-    if (!groqApiKey) {
+    if (!blackboxApiKey) {
       return NextResponse.json(
-        { error: 'Groq API key not configured' },
+        { error: 'Blackbox API key not configured' },
         { status: 500 }
       );
     }
 
-    console.log('Testing Groq API with key:', groqApiKey.substring(0, 10) + '...');
+    console.log('Testing Blackbox API with key:', blackboxApiKey.substring(0, 10) + '...');
 
-    // Test direct API call to Groq
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    // Test direct API call to Blackbox API
+    const response = await fetch('https://api.blackbox.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${groqApiKey}`,
+        'Authorization': `Bearer ${blackboxApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama3-8b-8192',
+        model: 'blackboxai/qwen/qwen3-8b:free',
         messages: [
           {
             role: 'user',
@@ -50,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Groq API error: ${response.status} - ${errorText}`);
+      throw new Error(`Blackbox API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
@@ -62,10 +59,10 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Groq API test error:', error);
+    console.error('Blackbox API test error:', error);
     return NextResponse.json(
       {
-        error: 'Failed to test Groq API',
+        error: 'Failed to test Blackbox API',
         details: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }

@@ -3,7 +3,7 @@ import {
   extractReasoningMiddleware,
   wrapLanguageModel,
 } from 'ai';
-import { createGroq } from '@ai-sdk/groq';
+import {createOpenAICompatible} from "@ai-sdk/openai-compatible"
 import {
   artifactModel,
   chatModel,
@@ -12,10 +12,12 @@ import {
 } from './models.test';
 import { isTestEnvironment } from '../constants';
 
-// Initialize Groq with API key
-const groq = createGroq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+// Initialize Blackbox AI with API key
+const blackbox = createOpenAICompatible({
+  name: "Blackbox",
+  baseURL: "https://api.blackbox.ai",
+  apiKey: process.env.BLACKBOX_API_KEY
+})
 
 export const myProvider = isTestEnvironment
   ? customProvider({
@@ -28,12 +30,12 @@ export const myProvider = isTestEnvironment
     })
   : customProvider({
       languageModels: {
-        'chat-model': groq('llama3-8b-8192'),
+        'chat-model': blackbox('blackboxai/qwen/qwen3-8b:free'),
         'chat-model-reasoning': wrapLanguageModel({
-          model: groq('llama3-8b-8192'),
+          model: blackbox('blackboxai/qwen/qwen3-8b:free'),
           middleware: extractReasoningMiddleware({ tagName: 'think' }),
         }),
-        'title-model': groq('llama3-8b-8192'),
-        'artifact-model': groq('llama3-8b-8192'),
+        'title-model': blackbox('blackboxai/qwen/qwen3-8b:free'),
+        'artifact-model': blackbox('blackboxai/qwen/qwen3-8b:free'),
       },
     });

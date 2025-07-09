@@ -6,9 +6,9 @@ import { ThemeProvider } from '@/components/theme-provider';
 import './globals.css';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://chat.vercel.ai'),
-  title: 'Feynman Learning Assistant',
-  description: 'Master any concept by explaining it in simple terms. Learn through the Feynman Technique with AI-powered guidance.',
+  metadataBase: new URL('https://feynman-learning-i501jqpzb-yassines-projects-8cd0f5c8.vercel.app'),
+  title: 'Feynman Learning - AI-Powered Simple Explanations',
+  description: 'Master any concept by explaining it simply. AI-powered learning through the Feynman Technique with voice, text, and file upload support.',
 };
 
 export const viewport = {

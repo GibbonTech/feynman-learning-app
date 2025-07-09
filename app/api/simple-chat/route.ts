@@ -12,11 +12,11 @@ export async function POST(request: NextRequest) {
     }
 
     const userMessage = message.parts[0].text;
-    const groqApiKey = process.env.GROQ_API_KEY;
+    const blackboxApiKey = process.env.BLACKBOX_API_KEY;
 
-    if (!groqApiKey) {
+    if (!blackboxApiKey) {
       return NextResponse.json(
-        { error: 'Groq API key not configured' },
+        { error: 'Blackbox API key not configured' },
         { status: 500 }
       );
     }
@@ -50,15 +50,15 @@ ${context.substring(0, 1000)}...` : ''}
 
 Remember: Guide discovery, don't lecture. Be concise and focused naturally.`;
 
-    // Call Groq API
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    // Call Blackbox API
+    const response = await fetch('https://api.blackbox.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${groqApiKey}`,
+        'Authorization': `Bearer ${blackboxApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama3-8b-8192',
+        model: 'blackboxai/qwen/qwen3-8b:free',
         messages: [
           {
             role: 'system',
@@ -76,7 +76,7 @@ Remember: Guide discovery, don't lecture. Be concise and focused naturally.`;
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Groq API error:', response.status, errorText);
+      console.error('Blackbox API error:', response.status, errorText);
       return NextResponse.json(
         { error: 'AI service temporarily unavailable' },
         { status: 500 }
