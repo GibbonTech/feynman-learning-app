@@ -4,17 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Brain, ArrowRight, Upload, BookOpen, FileAudio, Sparkles, MessageSquare, Mic, Volume2, Zap, Target, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { FileUpload } from './file-upload';
 
 export function BentoLandingPage() {
   const router = useRouter();
-  const [showFileUpload, setShowFileUpload] = useState(false);
-
-  const handleContentImport = (content: string, title: string) => {
-    const chatId = Math.random().toString(36).substring(7);
-    router.push(`/chat/${chatId}?content=${encodeURIComponent(content)}&title=${encodeURIComponent(title)}`);
-  };
 
   const handleStartLearning = () => {
     router.push('/demo');
@@ -24,7 +16,7 @@ export function BentoLandingPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-950 dark:via-blue-950 dark:to-indigo-950">
       <div className="container mx-auto px-6 py-12">
         <div className="max-w-7xl mx-auto">
-          
+
           {/* Header */}
           <div className="text-center mb-16 animate-in fade-in-50 duration-700">
             <div className="flex items-center justify-center gap-3 mb-6">
@@ -58,7 +50,7 @@ export function BentoLandingPage() {
 
           {/* Bento Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-            
+
             {/* Main Feature - AI Explanations */}
             <Card className="lg:col-span-2 lg:row-span-2 group hover:shadow-2xl transition-all duration-500 border-0 bg-gradient-to-br from-blue-500 to-purple-600 text-white overflow-hidden relative">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-700/20 backdrop-blur-sm"></div>
@@ -100,7 +92,7 @@ export function BentoLandingPage() {
                 </div>
                 <div className="flex items-center gap-2 mt-4 text-green-200">
                   <Mic className="w-4 h-4" />
-                  <span className="text-xs">Voice-to-text ready</span>
+                  <span className="text-xs">Demo feature</span>
                 </div>
               </CardContent>
             </Card>
@@ -119,12 +111,12 @@ export function BentoLandingPage() {
                 </div>
                 <div className="flex items-center gap-2 mt-4 text-orange-200">
                   <Volume2 className="w-4 h-4" />
-                  <span className="text-xs">Text-to-speech enabled</span>
+                  <span className="text-xs">Demo feature</span>
                 </div>
               </CardContent>
             </Card>
 
-            {/* File Upload */}
+            {/* File Upload Showcase */}
             <Card className="lg:col-span-2 group hover:shadow-xl transition-all duration-300 border-0 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800">
               <CardContent className="p-8 h-full flex flex-col justify-center">
                 <div className="text-center">
@@ -135,13 +127,10 @@ export function BentoLandingPage() {
                   <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
                     Upload markdown files from Obsidian, Notion exports, or any text editor to start learning
                   </p>
-                  <Button
-                    onClick={() => setShowFileUpload(true)}
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl px-6 py-3 transition-all duration-300"
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload Files
-                  </Button>
+                  <div className="bg-gray-100 dark:bg-gray-800 rounded-xl px-6 py-3 inline-flex items-center gap-2">
+                    <Upload className="w-4 h-4 text-gray-500" />
+                    <span className="text-gray-500 text-sm">Available in demo</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -209,27 +198,7 @@ export function BentoLandingPage() {
         </div>
       </div>
 
-      {/* File Upload Modal */}
-      {showFileUpload && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-2xl bg-white dark:bg-gray-900">
-            <CardContent className="p-8">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Upload Study Materials</h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowFileUpload(false)}
-                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                >
-                  ✕
-                </Button>
-              </div>
-              <FileUpload onContentImport={handleContentImport} />
-            </CardContent>
-          </Card>
-        </div>
-      )}
+
     </div>
   );
 }
